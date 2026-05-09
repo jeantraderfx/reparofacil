@@ -34,7 +34,7 @@ export default function DashboardProfesional() {
   const fetchData = async () => {
     const [{ data: perfData }, { data: trabajosData }] = await Promise.all([
       supabase.from('profesional_profiles').select('*').eq('user_id', user!.id).single(),
-      supabase.from('trabajos').select('*, cliente_profiles(telefono, users:user_id(nombre:raw_user_meta_data->>nombre))').order('created_at', { ascending: false }),
+      supabase.from('trabajos').select('*').order('created_at', { ascending: false }),
     ])
     setPerfil(perfData)
     setTrabajos(trabajosData || [])

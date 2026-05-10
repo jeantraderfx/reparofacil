@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
   try {
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    
+    if (!apiKey) {
+      return NextResponse.json({ error: `API key missing. Env keys: ${Object.keys(process.env).filter(k => k.includes('ANTHROP')).join(',')}` }, { status: 500 })
+    }
+
     const { descripcion } = await req.json()
     if (!descripcion) return NextResponse.json({ error: 'Descripción requerida' }, { status: 400 })
 
@@ -9,7 +15,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
@@ -32,7 +38,7 @@ Responde ÚNICAMENTE con un JSON con este formato exacto (sin markdown, sin expl
     })
 
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error?.message || 'Error API')
+    if (!res.ok) throw new Error(JSON.stringify(data.error))
 
     const text = data.content[0].text.trim()
     const parsed = JSON.parse(text)

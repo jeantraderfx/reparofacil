@@ -16,12 +16,16 @@ interface Profesional {
   id: string
   user_id: string
   especialidad: string
+  especialidades: string[]
   rating: number | null
   trabajos_completados: number
   lat: number | null
   lng: number | null
   ciudad: string | null
+  direccion: string | null
   disponible: boolean
+  foto_url: string | null
+  kyc_verificado: boolean
   distancia?: number
 }
 
@@ -79,11 +83,17 @@ export default function NuevaSolicitud() {
       if (!pro.lat || !pro.lng) return
       const marker = new window.google.maps.Marker({
         position: { lat: pro.lat, lng: pro.lng }, map: mapInstance.current,
-        icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#111', fillOpacity: 1, strokeColor: 'white', strokeWeight: 2 },
+        icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: pro.kyc_verificado ? '#16A34A' : '#111', fillOpacity: 1, strokeColor: 'white', strokeWeight: 2 },
         title: pro.especialidad,
       })
       const info = new window.google.maps.InfoWindow({
-        content: `<div style="font-family:DM Sans,sans-serif;padding:6px"><b>${pro.especialidad}</b><br/><span style="color:#FF5C3A">${pro.distancia ? pro.distancia.toFixed(1)+' km' : ''}</span></div>`,
+        content: `<div style="font-family:DM Sans,sans-serif;padding:8px;min-width:180px">
+          ${pro.foto_url ? `<img src="${pro.foto_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-bottom:6px"/>` : ''}
+          <div style="font-weight:700;color:#111">${pro.especialidades?.join(', ') || pro.especialidad}</div>
+          <div style="color:#888;font-size:0.8rem">${pro.distancia && pro.distancia < 999 ? pro.distancia.toFixed(1)+' km' : ''}</div>
+          ${pro.rating ? `<div style="color:#FF5C3A;font-size:0.8rem">⭐ ${pro.rating}</div>` : ''}
+          ${pro.kyc_verificado ? '<div style="color:#16A34A;font-size:0.75rem;font-weight:600">✓ Verificado</div>' : ''}
+        </div>`,
       })
       marker.addListener('click', () => { info.open(mapInstance.current, marker); setProfesionalSeleccionado(pro) })
     })
@@ -110,7 +120,6 @@ export default function NuevaSolicitud() {
       if (data.error) throw new Error(data.error)
       setServicioDetectado(data)
 
-      // Get location
       const getLocation = () => new Promise<{ lat: number; lng: number }>(resolve => {
         if (!navigator.geolocation) resolve({ lat: 40.4168, lng: -3.7038 })
         else navigator.geolocation.getCurrentPosition(
@@ -122,15 +131,20 @@ export default function NuevaSolicitud() {
       const loc = await getLocation()
       setUserLocation(loc)
 
-      // Fetch pros
       const { data: prosData } = await supabase.from('profesional_profiles').select('*').eq('disponible', true)
       if (prosData) {
-        const prosConDist = prosData.map(p => ({ ...p, distancia: p.lat && p.lng ? calcularDistancia(loc.lat, loc.lng, p.lat, p.lng) : 999 }))
-          .sort((a, b) => a.distancia - b.distancia)
+        const prosConDist = prosData
+          .map(p => ({ ...p, distancia: p.lat && p.lng ? calcularDistancia(loc.lat, loc.lng, p.lat, p.lng) : 999 }))
+          .sort((a, b) => {
+            // Sort by: verified first, then rating desc, then distance asc
+            if (a.kyc_verificado !== b.kyc_verificado) return b.kyc_verificado ? 1 : -1
+            if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0)
+            return a.distancia - b.distancia
+          })
         setProfesionales(prosConDist)
       }
       setStep('mapa')
-    } catch {
+    } catch (e: any) {
       setError('Error al analizar tu solicitud. Inténtalo de nuevo.')
     } finally {
       setLoadingIA(false)
@@ -162,11 +176,23 @@ export default function NuevaSolicitud() {
     router.push('/dashboard/cliente?success=1')
   }
 
+  const renderStars = (rating: number | null) => {
+    if (!rating) return null
+    return (
+      <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        {[1,2,3,4,5].map(i => (
+          <span key={i} style={{ color: i <= Math.round(rating) ? '#FFBB00' : '#ddd', fontSize: '0.8rem' }}>★</span>
+        ))}
+        <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: 2 }}>{rating}</span>
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#F7F5F2' }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @media(max-width:768px){.map-grid{grid-template-columns:1fr!important;grid-template-rows:auto 400px}}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <nav style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)', padding: '0 2rem', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
           <Link href="/dashboard/cliente" style={{ fontSize: '0.88rem', color: '#666', fontWeight: 500, textDecoration: 'none' }}>← Volver</Link>
           <span style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: '0.95rem', color: '#111' }}>reparo<span style={{ color: '#FF5C3A' }}>fácil</span></span>
         </div>
@@ -200,64 +226,146 @@ export default function NuevaSolicitud() {
       )}
 
       {step === 'mapa' && (
-        <div className="map-grid" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', height: 'calc(100vh - 64px)' }}>
-          <div style={{ overflowY: 'auto', background: 'white', borderRight: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column' }}>
-            {servicioDetectado && (
-              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(0,0,0,0.07)', background: '#FFF0ED' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#FF5C3A', letterSpacing: '.06em', marginBottom: '0.3rem' }}>IA DETECTÓ</div>
-                <div style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: '1.05rem', color: '#111', marginBottom: '0.25rem' }}>{servicioDetectado.categoria}</div>
-                <div style={{ fontSize: '0.83rem', color: '#555', lineHeight: 1.5, marginBottom: '0.5rem' }}>{servicioDetectado.resumen}</div>
-                <span style={{ background: servicioDetectado.urgencia === 'urgente' ? '#FEF2F2' : '#EDFBF3', color: servicioDetectado.urgencia === 'urgente' ? '#DC2626' : '#16A34A', borderRadius: 100, padding: '0.15rem 0.65rem', fontSize: '0.72rem', fontWeight: 600 }}>
-                  {servicioDetectado.urgencia === 'urgente' ? '🚨 Urgente' : '📅 Sin prisa'}
-                </span>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '1.5rem 2rem' }}>
+          {/* IA result banner */}
+          {servicioDetectado && (
+            <div style={{ background: '#FFF0ED', borderRadius: 16, padding: '1rem 1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#FF5C3A', letterSpacing: '.06em' }}>IA DETECTÓ</div>
+                <div style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#111' }}>{servicioDetectado.categoria}</div>
+                <div style={{ fontSize: '0.85rem', color: '#555' }}>{servicioDetectado.resumen}</div>
               </div>
+              <span style={{ background: servicioDetectado.urgencia === 'urgente' ? '#FEF2F2' : '#EDFBF3', color: servicioDetectado.urgencia === 'urgente' ? '#DC2626' : '#16A34A', borderRadius: 100, padding: '0.2rem 0.75rem', fontSize: '0.78rem', fontWeight: 600 }}>
+                {servicioDetectado.urgencia === 'urgente' ? '🚨 Urgente' : '📅 Sin prisa'}
+              </span>
+              <button onClick={() => setStep('descripcion')} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 100, padding: '0.35rem 0.9rem', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', color: '#555', fontFamily: 'DM Sans,sans-serif' }}>
+                ← Modificar
+              </button>
+            </div>
+          )}
+
+          {/* Map */}
+          <div style={{ borderRadius: 20, overflow: 'hidden', border: '1.5px solid rgba(0,0,0,0.08)', marginBottom: '2rem', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+            <div ref={mapRef} style={{ width: '100%', height: 420, background: '#e5e3df' }} />
+          </div>
+
+          {/* Submit bar */}
+          <div style={{ background: 'white', borderRadius: 16, padding: '1.25rem 1.5rem', marginBottom: '2rem', border: '1.5px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            {profesionalSeleccionado ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {profesionalSeleccionado.foto_url && <img src={profesionalSeleccionado.foto_url} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />}
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#111', fontFamily: 'Syne,sans-serif' }}>{profesionalSeleccionado.especialidades?.join(', ') || profesionalSeleccionado.especialidad}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#16A34A', fontWeight: 600 }}>✓ Seleccionado</div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.88rem', color: '#888' }}>Selecciona un profesional del ranking o publica sin asignar</div>
             )}
-            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#888' }}>{profesionales.length} profesionales encontrados</div>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
-              {profesionales.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#888', fontSize: '0.88rem' }}>
-                  No hay profesionales registrados aún.<br/>
-                  <button onClick={handleSubmit} style={{ marginTop: '1rem', background: '#FF5C3A', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.2rem', cursor: 'pointer', fontWeight: 600, fontFamily: 'DM Sans,sans-serif' }}>Publicar solicitud general →</button>
-                </div>
-              )}
-              {profesionales.map(pro => (
-                <div key={pro.id} onClick={() => setProfesionalSeleccionado(pro)} style={{ padding: '0.9rem 1rem', borderRadius: 12, marginBottom: '0.5rem', border: `2px solid ${profesionalSeleccionado?.id === pro.id ? '#FF5C3A' : 'rgba(0,0,0,0.08)'}`, background: profesionalSeleccionado?.id === pro.id ? '#FFF0ED' : 'white', cursor: 'pointer', transition: 'all .2s' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: profesionalSeleccionado?.id === pro.id ? '#FF5C3A' : '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.8rem', fontFamily: 'Syne,sans-serif', flexShrink: 0 }}>
-                      {pro.especialidad.slice(0,2).toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#111', fontFamily: 'Syne,sans-serif' }}>{pro.especialidad}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#888' }}>{pro.ciudad || 'España'}{pro.rating ? ` · ⭐ ${pro.rating}` : ''}</div>
-                    </div>
-                    {pro.distancia && pro.distancia < 999 && <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#FF5C3A' }}>{pro.distancia.toFixed(1)} km</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '1rem', borderTop: '1px solid rgba(0,0,0,0.07)', background: 'white' }}>
-              {profesionalSeleccionado && (
-                <div style={{ background: '#EDFBF3', borderRadius: 10, padding: '0.5rem 0.85rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: '#16A34A', fontWeight: 600 }}>
-                  ✓ {profesionalSeleccionado.especialidad} seleccionado
-                </div>
-              )}
-              <div style={{ marginBottom: '0.75rem' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#333', marginBottom: '0.3rem' }}>Presupuesto máximo (opcional)</label>
-                <input type="number" value={presupuesto} onChange={e => setPresupuesto(e.target.value)} placeholder="€"
-                  style={{ width: '100%', padding: '0.6rem 0.9rem', border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 10, fontSize: '0.88rem', outline: 'none', fontFamily: 'DM Sans,sans-serif', boxSizing: 'border-box' }} />
-              </div>
-              {error && <div style={{ color: '#FF5C3A', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 500 }}>{error}</div>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+              <input type="number" value={presupuesto} onChange={e => setPresupuesto(e.target.value)} placeholder="Presupuesto €"
+                style={{ padding: '0.55rem 0.9rem', border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 10, fontSize: '0.88rem', outline: 'none', fontFamily: 'DM Sans,sans-serif', width: 140 }} />
               <button onClick={handleSubmit} disabled={loading}
-                style={{ width: '100%', padding: '0.8rem', background: loading ? '#ccc' : '#FF5C3A', color: 'white', border: 'none', borderRadius: 12, fontSize: '0.95rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Syne,sans-serif' }}>
-                {loading ? 'Enviando...' : profesionalSeleccionado ? '🚀 Enviar al profesional' : '📋 Publicar solicitud general'}
+                style={{ padding: '0.65rem 1.5rem', background: loading ? '#ccc' : '#FF5C3A', color: 'white', border: 'none', borderRadius: 12, fontSize: '0.92rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Syne,sans-serif', whiteSpace: 'nowrap', boxShadow: loading ? 'none' : '0 4px 16px rgba(255,92,58,.25)' }}>
+                {loading ? 'Enviando...' : profesionalSeleccionado ? '🚀 Enviar solicitud' : '📋 Publicar general'}
               </button>
             </div>
           </div>
-          <div ref={mapRef} style={{ width: '100%', height: '100%', background: '#e5e3df' }} />
+
+          {/* Professionals ranking */}
+          <div>
+            <h2 style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: '1.3rem', color: '#111', marginBottom: '0.5rem' }}>
+              Profesionales recomendados
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: '#888', marginBottom: '1.25rem' }}>
+              Ordenados por valoración y distancia a tu ubicación
+            </p>
+
+            {profesionales.length === 0 && (
+              <div style={{ background: 'white', borderRadius: 16, padding: '2.5rem', textAlign: 'center', border: '1.5px solid rgba(0,0,0,0.07)' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>👷</div>
+                <p style={{ color: '#888', fontSize: '0.9rem' }}>No hay profesionales registrados aún en tu zona.</p>
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
+              {profesionales.map((pro, idx) => (
+                <div key={pro.id} onClick={() => setProfesionalSeleccionado(pro)} style={{
+                  background: 'white', borderRadius: 16, padding: '1.25rem',
+                  border: `2px solid ${profesionalSeleccionado?.id === pro.id ? '#FF5C3A' : 'rgba(0,0,0,0.08)'}`,
+                  cursor: 'pointer', transition: 'all .2s', position: 'relative',
+                  boxShadow: profesionalSeleccionado?.id === pro.id ? '0 8px 32px rgba(255,92,58,.15)' : '0 1px 4px rgba(0,0,0,0.05)',
+                }}
+                  onMouseEnter={e => { if (profesionalSeleccionado?.id !== pro.id) (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}>
+                  {/* Rank badge */}
+                  <div style={{ position: 'absolute', top: 12, right: 12, background: idx === 0 ? '#FFBB00' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : '#F7F5F2', color: idx < 3 ? 'white' : '#888', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.82rem', fontFamily: 'Syne,sans-serif' }}>
+                    #{idx + 1}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: '0.9rem' }}>
+                    {/* Avatar */}
+                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#F7F5F2', flexShrink: 0, overflow: 'hidden', border: '2px solid rgba(0,0,0,0.06)', position: 'relative' }}>
+                      {pro.foto_url ? (
+                        <img src={pro.foto_url} alt="foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#888' }}>
+                          {(pro.especialidad || 'P').slice(0, 1)}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: '0.2rem' }}>
+                        {pro.kyc_verificado && (
+                          <span style={{ background: '#EDFBF3', color: '#16A34A', borderRadius: 100, padding: '0.1rem 0.5rem', fontSize: '0.7rem', fontWeight: 700 }}>✓ Verificado</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#888', lineHeight: 1.4 }}>
+                        {(pro.especialidades || [pro.especialidad]).slice(0, 3).join(' · ')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div style={{ marginBottom: '0.6rem' }}>
+                    {pro.rating ? renderStars(pro.rating) : <div style={{ fontSize: '0.78rem', color: '#aaa' }}>Sin valoraciones aún</div>}
+                    {pro.trabajos_completados > 0 && (
+                      <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.2rem' }}>{pro.trabajos_completados} trabajos completados</div>
+                    )}
+                  </div>
+
+                  {/* Distance & location */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#888' }}>📍 {pro.ciudad || (pro.direccion ? pro.direccion.split(',')[0] : 'España')}</div>
+                    {pro.distancia && pro.distancia < 999 && (
+                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#FF5C3A' }}>{pro.distancia.toFixed(1)} km</div>
+                    )}
+                  </div>
+
+                  {profesionalSeleccionado?.id === pro.id && (
+                    <div style={{ marginTop: '0.75rem', background: '#EDFBF3', borderRadius: 8, padding: '0.35rem 0.6rem', fontSize: '0.78rem', color: '#16A34A', fontWeight: 600, textAlign: 'center' }}>
+                      ✓ Seleccionado — listo para enviar
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {error && <div style={{ background: '#FFF0ED', border: '1px solid rgba(255,92,58,.3)', borderRadius: 10, padding: '0.75rem 1rem', marginTop: '1rem', fontSize: '0.88rem', color: '#FF5C3A', fontWeight: 500 }}>{error}</div>}
         </div>
       )}
     </div>
   )
+
+  function renderStars(rating: number) {
+    return (
+      <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        {[1,2,3,4,5].map(i => (
+          <span key={i} style={{ color: i <= Math.round(rating) ? '#FFBB00' : '#ddd', fontSize: '0.85rem' }}>★</span>
+        ))}
+        <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: 2 }}>{rating}</span>
+      </div>
+    )
+  }
 }

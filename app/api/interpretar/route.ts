@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
-    
-    if (!apiKey) {
-      return NextResponse.json({ error: `API key missing. Env keys: ${Object.keys(process.env).filter(k => k.includes('ANTHROP')).join(',')}` }, { status: 500 })
-    }
+    if (!apiKey) return NextResponse.json({ error: 'API key no configurada' }, { status: 500 })
 
     const { descripcion } = await req.json()
     if (!descripcion) return NextResponse.json({ error: 'Descripción requerida' }, { status: 400 })
@@ -23,24 +20,24 @@ export async function POST(req: NextRequest) {
         max_tokens: 300,
         messages: [{
           role: 'user',
-          content: `Analiza esta descripción de un cliente que necesita un servicio del hogar en España y extrae la información clave.
+          content: `Eres un clasificador de servicios del hogar. Analiza esta descripción y responde SOLO con JSON válido, sin markdown, sin backticks, sin explicaciones extra.
 
 Descripción: "${descripcion}"
 
-Responde ÚNICAMENTE con un JSON con este formato exacto (sin markdown, sin explicaciones):
-{
-  "categoria": "una de estas: Electricidad, Fontanería, Pintura, Carpintería, Climatización, Limpieza, Reformas, Cerrajería, Jardinería, Mudanzas, General",
-  "urgencia": "urgente o flexible",
-  "resumen": "resumen conciso en máximo 2 frases de lo que necesita el cliente"
-}`
-        }]
+Formato de respuesta (solo esto, nada más):
+{"categoria":"Fontanería","urgencia":"urgente","resumen":"El cliente necesita reparar un grifo roto que pierde agua."}`
+        }],
+        system: 'Eres un clasificador JSON. Solo respondes con JSON válido. Nunca uses markdown, backticks ni texto adicional. La categoría debe ser una de: Electricidad, Fontanería, Pintura, Carpintería, Climatización, Limpieza, Reformas, Cerrajería, Jardinería, Mudanzas, General. La urgencia es urgente o flexible.',
       })
     })
 
     const data = await res.json()
     if (!res.ok) throw new Error(JSON.stringify(data.error))
 
-    const text = data.content[0].text.trim()
+    let text = data.content[0].text.trim()
+    // Strip markdown if model still adds it
+    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    
     const parsed = JSON.parse(text)
     return NextResponse.json(parsed)
   } catch (e: any) {

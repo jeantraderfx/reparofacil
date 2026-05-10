@@ -358,14 +358,4 @@ export default function NuevaSolicitud() {
     </div>
   )
 
-  function renderStars(rating: number) {
-    return (
-      <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        {[1,2,3,4,5].map(i => (
-          <span key={i} style={{ color: i <= Math.round(rating) ? '#FFBB00' : '#ddd', fontSize: '0.85rem' }}>★</span>
-        ))}
-        <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: 2 }}>{rating}</span>
-      </div>
-    )
-  }
 }

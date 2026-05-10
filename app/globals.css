@@ -177,3 +177,33 @@ h1, h2, h3, h4 {
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--coral); margin-bottom: 0.75rem;
 }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Auth pages */
+  .auth-split-left { display: none !important; }
+  .auth-split-right { padding: 1.5rem !important; }
+
+  /* Dashboards */
+  .dash-header { flex-direction: column !important; align-items: flex-start !important; }
+  .dash-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .dash-tabs { width: 100% !important; }
+  .dash-tabs button { flex: 1 !important; }
+
+  /* Map page */
+  .map-grid { grid-template-columns: 1fr !important; height: auto !important; }
+  .map-sidebar { max-height: 50vh !important; overflow-y: auto !important; }
+  .map-container { height: 320px !important; }
+
+  /* Signup steps */
+  .signup-esp-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* Admin */
+  .admin-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .admin-table-wrap { overflow-x: auto !important; }
+}
+
+@media (max-width: 480px) {
+  .dash-stats { grid-template-columns: 1fr 1fr !important; }
+  .admin-stats { grid-template-columns: 1fr 1fr !important; }
+}

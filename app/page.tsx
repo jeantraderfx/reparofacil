@@ -3,34 +3,34 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
 const CATS = [
-  { icon: '⚡', label: 'Electricidad', n: '234 profesionales' },
-  { icon: '🔧', label: 'Fontanería', n: '189 profesionales' },
-  { icon: '🎨', label: 'Pintura', n: '312 profesionales' },
-  { icon: '🪟', label: 'Carpintería', n: '156 profesionales' },
-  { icon: '❄️', label: 'Climatización', n: '98 profesionales' },
-  { icon: '🧹', label: 'Limpieza', n: '421 profesionales' },
-  { icon: '🏠', label: 'Reformas', n: '267 profesionales' },
-  { icon: '🔒', label: 'Cerrajería', n: '143 profesionales' },
-  { icon: '🌿', label: 'Jardinería', n: '112 profesionales' },
+  { icon: '⚡', label: 'Electricidad', n: '234 pros' },
+  { icon: '🔧', label: 'Fontanería', n: '189 pros' },
+  { icon: '🎨', label: 'Pintura', n: '312 pros' },
+  { icon: '🪟', label: 'Carpintería', n: '156 pros' },
+  { icon: '❄️', label: 'Climatización', n: '98 pros' },
+  { icon: '🧹', label: 'Limpieza', n: '421 pros' },
+  { icon: '🏠', label: 'Reformas', n: '267 pros' },
+  { icon: '🔒', label: 'Cerrajería', n: '143 pros' },
+  { icon: '🌿', label: 'Jardinería', n: '112 pros' },
 ]
 
 const PROS = [
-  { initials: 'CM', name: 'Carlos M.', esp: 'Electricista', loc: 'Madrid', rating: 4.9, jobs: 187, verified: true, bg: '#E8512A' },
-  { initials: 'LF', name: 'Lucía F.', esp: 'Pintora', loc: 'Barcelona', rating: 5.0, jobs: 243, verified: true, bg: '#0D1B2A' },
-  { initials: 'JR', name: 'Javier R.', esp: 'Fontanero', loc: 'Sevilla', rating: 4.8, jobs: 134, verified: true, bg: '#1A7A4A' },
+  { initials: 'CM', name: 'Carlos M.', esp: 'Electricista', loc: 'Madrid', rating: 4.9, jobs: 187, bg: '#E8512A' },
+  { initials: 'LF', name: 'Lucía F.', esp: 'Pintora', loc: 'Barcelona', rating: 5.0, jobs: 243, bg: '#0D1B2A' },
+  { initials: 'JR', name: 'Javier R.', esp: 'Fontanero', loc: 'Sevilla', rating: 4.8, jobs: 134, bg: '#1A7A4A' },
 ]
 
 const STEPS = [
   { n: '1', icon: '✍️', title: 'Describe tu problema', body: 'Escribe con tus palabras. Nuestra IA entiende cualquier descripción y clasifica el servicio automáticamente.' },
   { n: '2', icon: '🗺️', title: 'Elige en el mapa', body: 'Visualiza los profesionales verificados más cercanos a ti, ordenados por valoración y distancia.' },
-  { n: '3', icon: '✅', title: 'Trabaja con garantía', body: 'El profesional acepta el trabajo. El pago queda retenido hasta que confirmes que todo está correcto.' },
+  { n: '3', icon: '✅', title: 'Trabaja con garantía', body: 'El pago queda retenido hasta que confirmes que todo está correcto.' },
 ]
 
 const STATS = [
-  { v: '12.400+', l: 'Profesionales activos' },
-  { v: '58.000+', l: 'Trabajos completados' },
-  { v: '4.96', l: 'Valoración media' },
-  { v: '95%', l: 'Satisfacción garantizada' },
+  { v: '12.400+', l: 'Profesionales' },
+  { v: '58.000+', l: 'Trabajos' },
+  { v: '4.96★', l: 'Valoración' },
+  { v: '95%', l: 'Satisfacción' },
 ]
 
 const TESTIMONIALS = [
@@ -42,6 +42,7 @@ const TESTIMONIALS = [
 export default function Home() {
   const [search, setSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -49,91 +50,118 @@ export default function Home() {
     const els = document.querySelectorAll('.reveal')
     const obs = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
-      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+      { threshold: 0.08 }
     )
     els.forEach(el => obs.observe(el))
     return () => { window.removeEventListener('scroll', onScroll); obs.disconnect() }
   }, [])
 
-  const Stars = ({ r }: { r: number }) => (
-    <div style={{ display: 'flex', gap: 1 }}>
-      {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(r) ? '#F59E0B' : '#E2E0DC', fontSize: '0.78rem' }}>★</span>)}
-    </div>
-  )
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--white)' }}>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .hide-mobile { display: flex; }
+        .show-mobile { display: none; }
+        @media(max-width: 768px) {
+          .hide-mobile { display: none !important; }
+          .show-mobile { display: flex !important; }
+          .hero-title { font-size: 2.2rem !important; }
+          .stats-grid { gap: 1.5rem !important; }
+          .cats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .steps-grid { grid-template-columns: 1fr !important; }
+          .pros-grid { grid-template-columns: 1fr !important; }
+          .why-grid { grid-template-columns: 1fr 1fr !important; }
+          .testi-grid { grid-template-columns: 1fr !important; }
+          .footer-grid { grid-template-columns: 1fr 1fr !important; }
+          .cta-btns { flex-direction: column !important; }
+          .search-box { flex-wrap: wrap !important; }
+          .search-btn { width: 100% !important; justify-content: center !important; }
+          .nav-logo-text { font-size: 1rem !important; }
+          .section-pad { padding: 4rem 1.25rem !important; }
+          .hero-pad { padding: 3rem 1.25rem 4rem !important; }
+          .pro-card-row { flex-direction: column !important; gap: 0.5rem !important; }
+        }
+        @media(max-width: 480px) {
+          .cats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .why-grid { grid-template-columns: 1fr !important; }
+          .footer-grid { grid-template-columns: 1fr !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; }
+        }
+      `}</style>
 
-      {/* ── NAVBAR ─────────────────────────────────────────────── */}
-      <header style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.0)',
-        borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        transition: 'all 0.3s ease',
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{ width: 34, height: 34, background: 'var(--coral)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>🔧</div>
-            <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.18rem', color: 'var(--navy)', letterSpacing: '-0.02em' }}>
-              Reparo<span style={{ color: 'var(--coral)' }}>Fácil</span>
-            </span>
+      {/* NAVBAR */}
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: scrolled ? 'rgba(255,255,255,0.97)' : 'transparent', borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent', backdropFilter: scrolled ? 'blur(12px)' : 'none', transition: 'all 0.3s ease' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
+            <div style={{ width: 32, height: 32, background: 'var(--coral)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🔧</div>
+            <span className="nav-logo-text" style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.15rem', color: 'var(--navy)' }}>Reparo<span style={{ color: 'var(--coral)' }}>Fácil</span></span>
           </Link>
 
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          {/* Desktop nav */}
+          <nav className="hide-mobile" style={{ alignItems: 'center', gap: '2rem' }}>
             <a href="#servicios" className="nav-link">Servicios</a>
             <a href="#como-funciona" className="nav-link">Cómo funciona</a>
             <a href="#profesionales" className="nav-link">Profesionales</a>
           </nav>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Link href="/auth/login" className="btn-outline" style={{ padding: '0.55rem 1.1rem', fontSize: '0.86rem' }}>Entrar</Link>
-            <Link href="/auth/signup" className="btn-primary" style={{ padding: '0.58rem 1.2rem', fontSize: '0.86rem' }}>Regístrate gratis</Link>
+          <div className="hide-mobile" style={{ alignItems: 'center', gap: '0.75rem' }}>
+            <Link href="/auth/login" className="btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>Entrar</Link>
+            <Link href="/auth/signup" className="btn-primary" style={{ padding: '0.52rem 1.1rem', fontSize: '0.85rem' }}>Regístrate</Link>
           </div>
+
+          {/* Mobile burger */}
+          <button className="show-mobile" onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 7, width: 38, height: 38, cursor: 'pointer', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+            {menuOpen ? '✕' : '☰'}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div style={{ background: 'white', borderTop: '1px solid var(--border)', padding: '1rem 1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <a href="#servicios" className="nav-link" onClick={() => setMenuOpen(false)} style={{ fontSize: '1rem', padding: '0.4rem 0' }}>Servicios</a>
+            <a href="#como-funciona" className="nav-link" onClick={() => setMenuOpen(false)} style={{ fontSize: '1rem', padding: '0.4rem 0' }}>Cómo funciona</a>
+            <a href="#profesionales" className="nav-link" onClick={() => setMenuOpen(false)} style={{ fontSize: '1rem', padding: '0.4rem 0' }}>Profesionales</a>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <Link href="/auth/login" className="btn-outline" style={{ flex: 1, justifyContent: 'center', fontSize: '0.9rem' }}>Entrar</Link>
+              <Link href="/auth/signup" className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: '0.9rem' }}>Regístrate</Link>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* ── HERO ───────────────────────────────────────────────── */}
-      <section style={{ paddingTop: 68, background: 'var(--sand)', minHeight: '88vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* Subtle grid texture */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)', backgroundSize: '48px 48px', opacity: 0.5, pointerEvents: 'none' }} />
-        {/* Coral accent blob */}
-        <div style={{ position: 'absolute', top: -80, right: -80, width: 480, height: 480, background: 'radial-gradient(circle, rgba(232,81,42,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      {/* HERO */}
+      <section style={{ paddingTop: 64, background: 'var(--sand)', minHeight: '85vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)', backgroundSize: '48px 48px', opacity: 0.4, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -80, right: -80, width: 400, height: 400, background: 'radial-gradient(circle, rgba(232,81,42,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '5rem 2rem 6rem', width: '100%', position: 'relative' }}>
+        <div className="hero-pad" style={{ maxWidth: 1200, margin: '0 auto', padding: '4rem 1.25rem 5rem', width: '100%', position: 'relative' }}>
           <div style={{ maxWidth: 680 }}>
             <div className="anim-up" style={{ marginBottom: '1.25rem' }}>
               <span className="tag">✦ Plataforma verificada · España</span>
             </div>
-
-            <h1 className="anim-up d1" style={{ fontSize: 'clamp(2.6rem,5.5vw,4rem)', fontWeight: 900, marginBottom: '1.25rem', lineHeight: 1.08, color: 'var(--navy)' }}>
+            <h1 className="anim-up d1 hero-title" style={{ fontSize: 'clamp(2.1rem, 5vw, 3.8rem)', fontWeight: 900, marginBottom: '1.1rem', lineHeight: 1.08, color: 'var(--navy)' }}>
               Tu hogar en buenas manos.<br />
               <span style={{ color: 'var(--coral)', fontStyle: 'italic' }}>Siempre.</span>
             </h1>
-
-            <p className="anim-up d2" style={{ fontSize: '1.05rem', color: 'var(--gray-4)', lineHeight: 1.7, marginBottom: '2.5rem', maxWidth: 520, fontWeight: 400 }}>
-              Describe lo que necesitas y nuestra IA encuentra al profesional verificado más cercano a ti en segundos. Sin sorpresas, con garantía.
+            <p className="anim-up d2" style={{ fontSize: 'clamp(0.92rem, 2.5vw, 1.05rem)', color: 'var(--gray-4)', lineHeight: 1.7, marginBottom: '2rem', maxWidth: 520 }}>
+              Describe lo que necesitas y nuestra IA encuentra al profesional verificado más cercano a ti en segundos.
             </p>
 
-            {/* Search box */}
-            <div className="anim-up d3" style={{ background: 'white', borderRadius: 10, padding: '0.5rem 0.5rem 0.5rem 1.25rem', border: '1.5px solid var(--border)', boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: 560 }}>
-              <span style={{ fontSize: '1rem' }}>🔍</span>
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Ej: se me rompió el grifo del baño..."
-                style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.95rem', color: 'var(--navy)', background: 'transparent', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
-              />
-              <Link href={`/auth/signup?q=${encodeURIComponent(search)}`} className="btn-primary" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-                Buscar profesional
+            {/* Search */}
+            <div className="anim-up d3 search-box" style={{ background: 'white', borderRadius: 10, padding: '0.45rem 0.45rem 0.45rem 1rem', border: '1.5px solid var(--border)', boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', gap: '0.6rem', maxWidth: 540 }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>🔍</span>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Ej: se me rompió el grifo..."
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem', color: 'var(--navy)', background: 'transparent', fontFamily: 'Plus Jakarta Sans, sans-serif', minWidth: 0 }} />
+              <Link href={`/auth/signup?q=${encodeURIComponent(search)}`} className="btn-primary search-btn" style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '0.85rem', padding: '0.6rem 1.1rem' }}>
+                Buscar
               </Link>
             </div>
 
-            {/* Popular searches */}
-            <div className="anim-up d4" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.78rem', color: 'var(--gray-3)', fontWeight: 500 }}>Frecuentes:</span>
-              {['Fontanero urgente', 'Electricista', 'Pintar piso', 'Cerrajero'].map(s => (
-                <button key={s} onClick={() => setSearch(s)} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 100, padding: '0.2rem 0.75rem', fontSize: '0.78rem', color: 'var(--gray-4)', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all .2s' }}
+            {/* Popular */}
+            <div className="anim-up d4" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.9rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--gray-3)', fontWeight: 500 }}>Frecuentes:</span>
+              {['Fontanero', 'Electricista', 'Pintar piso'].map(s => (
+                <button key={s} onClick={() => setSearch(s)} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 100, padding: '0.18rem 0.7rem', fontSize: '0.76rem', color: 'var(--gray-4)', cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif', transition: 'all .2s' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--coral)'; (e.currentTarget as HTMLElement).style.color = 'var(--coral)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--gray-4)' }}>
                   {s}
@@ -142,171 +170,142 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Stats strip */}
-          <div className="anim-up d5" style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', marginTop: '4rem', paddingTop: '2.5rem', borderTop: '1px solid var(--border)' }}>
+          {/* Stats */}
+          <div className="anim-up d5 stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, auto)', gap: '2rem', marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--border)', width: 'fit-content' }}>
             {STATS.map(s => (
               <div key={s.l}>
-                <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 900, fontSize: '2rem', color: 'var(--coral)', letterSpacing: '-0.03em' }}>{s.v}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--gray-3)', fontWeight: 500, marginTop: '0.1rem' }}>{s.l}</div>
+                <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 900, fontSize: '1.75rem', color: 'var(--coral)', letterSpacing: '-0.03em' }}>{s.v}</div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--gray-3)', fontWeight: 500, marginTop: '0.1rem' }}>{s.l}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── SERVICES ───────────────────────────────────────────── */}
-      <section id="servicios" style={{ padding: '6rem 2rem', background: 'var(--white)' }}>
+      {/* SERVICES */}
+      <section id="servicios" className="section-pad" style={{ padding: '5rem 1.25rem', background: 'var(--white)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '3rem' }}>
+          <div className="reveal" style={{ marginBottom: '2.5rem' }}>
             <div className="section-label">Servicios</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
-              <h2 style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 900 }}>¿Qué necesitas hoy?</h2>
-              <Link href="/auth/signup" className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--coral)', fontWeight: 600, textDecoration: 'none' }}>
-                Ver todos los servicios →
-              </Link>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900 }}>¿Qué necesitas hoy?</h2>
+              <Link href="/auth/signup" style={{ fontSize: '0.85rem', color: 'var(--coral)', fontWeight: 600, textDecoration: 'none' }}>Ver todos →</Link>
             </div>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '1rem' }}>
+          <div className="cats-grid reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.85rem' }}>
             {CATS.map((cat, i) => (
-              <div key={cat.label} className="reveal" style={{ animationDelay: `${i * 0.04}s` }}>
-                <Link href={`/auth/signup?cat=${encodeURIComponent(cat.label)}`} style={{ textDecoration: 'none', display: 'block' }}>
-                  <div className="card" style={{ padding: '1.5rem 1.25rem', cursor: 'pointer' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--coral)'; el.style.transform = 'translateY(-3px)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--border)'; el.style.transform = 'translateY(0)' }}>
-                    <div style={{ fontSize: '1.75rem', marginBottom: '0.9rem', lineHeight: 1 }}>{cat.icon}</div>
-                    <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', marginBottom: '0.3rem' }}>{cat.label}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--gray-3)', fontWeight: 500 }}>{cat.n}</div>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ───────────────────────────────────────── */}
-      <section id="como-funciona" style={{ padding: '6rem 2rem', background: 'var(--navy)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '3.5rem', textAlign: 'center' }}>
-            <div className="section-label" style={{ color: 'rgba(232,81,42,0.9)' }}>Proceso</div>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 900, color: 'white', marginBottom: '0.75rem' }}>
-              Tan sencillo como describir<br />lo que necesitas
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', maxWidth: 440, margin: '0 auto' }}>
-              De la descripción al profesional en tu puerta, en minutos.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {STEPS.map((step, i) => (
-              <div key={step.n} className="reveal" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '2rem', position: 'relative', overflow: 'hidden', transition: 'all .25s' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(232,81,42,0.08)'; el.style.borderColor = 'rgba(232,81,42,0.3)' }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,0.05)'; el.style.borderColor = 'rgba(255,255,255,0.08)' }}>
-                  {/* Step number watermark */}
-                  <div style={{ position: 'absolute', top: -12, right: 16, fontFamily: 'Fraunces, serif', fontWeight: 900, fontSize: '6rem', color: 'rgba(255,255,255,0.04)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>{step.n}</div>
-                  <div style={{ fontSize: '2rem', marginBottom: '1.25rem' }}>{step.icon}</div>
-                  <div style={{ display: 'inline-block', background: 'rgba(232,81,42,0.15)', color: 'var(--coral)', borderRadius: 4, padding: '0.12rem 0.55rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                    Paso {step.n}
-                  </div>
-                  <h3 style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.15rem', color: 'white', marginBottom: '0.6rem' }}>{step.title}</h3>
-                  <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>{step.body}</p>
+              <Link key={cat.label} href={`/auth/signup?cat=${encodeURIComponent(cat.label)}`} style={{ textDecoration: 'none' }}>
+                <div className="card" style={{ padding: '1.25rem 1rem', cursor: 'pointer', transition: 'all .22s' }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--coral)'; el.style.transform = 'translateY(-3px)' }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--border)'; el.style.transform = 'translateY(0)' }}>
+                  <div style={{ fontSize: '1.6rem', marginBottom: '0.75rem', lineHeight: 1 }}>{cat.icon}</div>
+                  <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '0.9rem', color: 'var(--navy)', marginBottom: '0.25rem' }}>{cat.label}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--gray-3)', fontWeight: 500 }}>{cat.n}</div>
                 </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section id="como-funciona" className="section-pad" style={{ padding: '5rem 1.25rem', background: 'var(--navy)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="reveal" style={{ marginBottom: '3rem', textAlign: 'center' }}>
+            <div className="section-label" style={{ color: 'rgba(232,81,42,0.9)', justifyContent: 'center', display: 'flex' }}>Proceso</div>
+            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900, color: 'white', marginBottom: '0.6rem' }}>Tan sencillo como describir<br />lo que necesitas</h2>
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.92rem', maxWidth: 400, margin: '0 auto' }}>De la descripción al profesional en tu puerta, en minutos.</p>
+          </div>
+          <div className="steps-grid reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
+            {STEPS.map((step, i) => (
+              <div key={step.n} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '1.75rem', position: 'relative', overflow: 'hidden', transition: 'all .25s' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(232,81,42,0.08)'; el.style.borderColor = 'rgba(232,81,42,0.3)' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,0.05)'; el.style.borderColor = 'rgba(255,255,255,0.08)' }}>
+                <div style={{ position: 'absolute', top: -10, right: 12, fontFamily: 'Fraunces, serif', fontWeight: 900, fontSize: '5rem', color: 'rgba(255,255,255,0.04)', lineHeight: 1, userSelect: 'none' }}>{step.n}</div>
+                <div style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>{step.icon}</div>
+                <div style={{ display: 'inline-block', background: 'rgba(232,81,42,0.15)', color: 'var(--coral)', borderRadius: 4, padding: '0.1rem 0.5rem', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '0.65rem' }}>Paso {step.n}</div>
+                <h3 style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.08rem', color: 'white', marginBottom: '0.5rem' }}>{step.title}</h3>
+                <p style={{ fontSize: '0.86rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65 }}>{step.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FEATURED PROS ──────────────────────────────────────── */}
-      <section id="profesionales" style={{ padding: '6rem 2rem', background: 'var(--white)' }}>
+      {/* PROS */}
+      <section id="profesionales" className="section-pad" style={{ padding: '5rem 1.25rem', background: 'var(--white)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div>
               <div className="section-label">Profesionales</div>
-              <h2 style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 900 }}>Los mejor valorados</h2>
+              <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900 }}>Los mejor valorados</h2>
             </div>
             <Link href="/auth/signup" style={{ fontSize: '0.85rem', color: 'var(--coral)', fontWeight: 600, textDecoration: 'none' }}>Ver todos →</Link>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-            {PROS.map((pro, i) => (
-              <div key={pro.name} className="reveal" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="card" style={{ padding: '1.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.25rem' }}>
-                    <div style={{ width: 54, height: 54, borderRadius: '50%', background: pro.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.1rem', flexShrink: 0, position: 'relative' }}>
-                      {pro.initials}
-                      <div className="dot-online" style={{ position: 'absolute', bottom: 1, right: 1 }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.05rem', color: 'var(--navy)', marginBottom: '0.1rem' }}>{pro.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--gray-4)' }}>{pro.esp} · {pro.loc}</div>
-                    </div>
-                    {pro.verified && <span className="badge-verified">✓ Verificado</span>}
+          <div className="pros-grid reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+            {PROS.map(pro => (
+              <div key={pro.name} className="card" style={{ padding: '1.5rem' }}>
+                <div className="pro-card-row" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
+                  <div style={{ width: 50, height: 50, borderRadius: '50%', background: pro.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1rem', flexShrink: 0 }}>{pro.initials}</div>
+                  <div>
+                    <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1rem', color: 'var(--navy)' }}>{pro.name}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--gray-4)' }}>{pro.esp} · {pro.loc}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem' }}>
-                    <Stars r={pro.rating} />
-                    <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '0.95rem', color: 'var(--navy)' }}>{pro.rating}</span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--gray-3)' }}>· {pro.jobs} trabajos</span>
-                  </div>
-                  <Link href="/auth/signup" className="btn-navy" style={{ width: '100%', justifyContent: 'center', fontSize: '0.86rem', padding: '0.6rem' }}>
-                    Solicitar presupuesto
-                  </Link>
+                  <span className="badge-verified" style={{ marginLeft: 'auto' }}>✓ KYC</span>
                 </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '1rem' }}>
+                  {[1,2,3,4,5].map(i => <span key={i} style={{ color: '#F59E0B', fontSize: '0.8rem' }}>★</span>)}
+                  <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '0.92rem', color: 'var(--navy)' }}>{pro.rating}</span>
+                  <span style={{ fontSize: '0.76rem', color: 'var(--gray-3)' }}>· {pro.jobs} trabajos</span>
+                </div>
+                <Link href="/auth/signup" className="btn-navy" style={{ width: '100%', justifyContent: 'center', fontSize: '0.85rem', padding: '0.58rem' }}>Solicitar presupuesto</Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── WHY US ─────────────────────────────────────────────── */}
-      <section style={{ padding: '6rem 2rem', background: 'var(--sand)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div className="section-label">Garantías</div>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 900, marginBottom: '0.75rem' }}>
-              Por qué elegir ReparoFácil
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
-            {[
-              { icon: '🛡️', title: 'Profesionales verificados', body: 'Cada profesional pasa por verificación de identidad y credenciales antes de activar su perfil.' },
-              { icon: '⚡', title: 'Respuesta en menos de 1 hora', body: 'Media de 28 minutos para responder en servicios urgentes. Sin esperas eternas.' },
-              { icon: '💳', title: 'Pago retenido hasta finalizar', body: 'Tu dinero queda protegido hasta que confirmes que el trabajo está bien hecho.' },
-              { icon: '🤝', title: 'Garantía de satisfacción', body: 'Si no quedas satisfecho, gestionamos el problema sin preguntas incómodas.' },
-            ].map((f, i) => (
-              <div key={i} className="reveal card" style={{ padding: '1.75rem', animationDelay: `${i * 0.08}s` }}>
-                <div style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>{f.icon}</div>
-                <h3 style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1.05rem', color: 'var(--navy)', marginBottom: '0.55rem' }}>{f.title}</h3>
-                <p style={{ fontSize: '0.87rem', color: 'var(--gray-4)', lineHeight: 1.7 }}>{f.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ───────────────────────────────────────── */}
-      <section style={{ padding: '6rem 2rem', background: 'var(--white)' }}>
+      {/* WHY US */}
+      <section className="section-pad" style={{ padding: '5rem 1.25rem', background: 'var(--sand)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="reveal" style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div className="section-label">Opiniones</div>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 900 }}>Lo que dicen nuestros usuarios</h2>
+            <div className="section-label" style={{ justifyContent: 'center', display: 'flex' }}>Garantías</div>
+            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900 }}>Por qué elegir ReparoFácil</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.25rem' }}>
+          <div className="why-grid reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            {[
+              { icon: '🛡️', title: 'Profesionales verificados', body: 'Verificación de identidad y credenciales antes de activar cada perfil.' },
+              { icon: '⚡', title: 'Respuesta en 1 hora', body: 'Media de 28 minutos en urgencias. Sin esperas interminables.' },
+              { icon: '💳', title: 'Pago retenido', body: 'Tu dinero queda protegido hasta que confirmes el trabajo bien hecho.' },
+              { icon: '🤝', title: 'Garantía total', body: 'Si no quedas satisfecho, gestionamos el problema sin preguntas.' },
+            ].map((f, i) => (
+              <div key={i} className="card reveal" style={{ padding: '1.5rem' }}>
+                <div style={{ fontSize: '1.6rem', marginBottom: '0.85rem' }}>{f.icon}</div>
+                <h3 style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', marginBottom: '0.45rem' }}>{f.title}</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--gray-4)', lineHeight: 1.65 }}>{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="section-pad" style={{ padding: '5rem 1.25rem', background: 'var(--white)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <div className="section-label" style={{ justifyContent: 'center', display: 'flex' }}>Opiniones</div>
+            <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900 }}>Lo que dicen nuestros usuarios</h2>
+          </div>
+          <div className="testi-grid reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '1rem' }}>
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="reveal card" style={{ padding: '1.75rem', animationDelay: `${i * 0.1}s` }}>
-                <div style={{ display: 'flex', gap: 2, marginBottom: '1rem' }}>
-                  {[1,2,3,4,5].map(j => <span key={j} style={{ color: '#F59E0B', fontSize: '0.85rem' }}>★</span>)}
-                </div>
-                <p style={{ fontSize: '0.92rem', color: 'var(--gray-5)', lineHeight: 1.75, marginBottom: '1.5rem', fontStyle: 'italic' }}>
-                  "{t.q}"
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: '50%', background: t.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '0.85rem', flexShrink: 0 }}>{t.ini}</div>
+              <div key={i} className="card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: 2, marginBottom: '0.9rem' }}>{[1,2,3,4,5].map(j => <span key={j} style={{ color: '#F59E0B', fontSize: '0.85rem' }}>★</span>)}</div>
+                <p style={{ fontSize: '0.9rem', color: 'var(--gray-5)', lineHeight: 1.72, marginBottom: '1.25rem', fontStyle: 'italic' }}>"{t.q}"</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{t.ini}</div>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--navy)' }}>{t.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--gray-3)' }}>{t.loc}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--navy)' }}>{t.name}</div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--gray-3)' }}>{t.loc}</div>
                   </div>
                 </div>
               </div>
@@ -315,60 +314,51 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CTA ────────────────────────────────────────────────── */}
-      <section style={{ padding: '6rem 2rem', background: 'var(--navy)' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+      {/* CTA */}
+      <section className="section-pad" style={{ padding: '5rem 1.25rem', background: 'var(--navy)' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
           <div className="reveal">
             <div className="section-label" style={{ color: 'rgba(232,81,42,0.9)', justifyContent: 'center', display: 'flex' }}>Empieza hoy</div>
-            <h2 style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
-              ¿Listo para encontrar<br />
-              <span style={{ color: 'var(--coral)', fontStyle: 'italic' }}>tu profesional ideal?</span>
+            <h2 style={{ fontSize: 'clamp(1.7rem, 4vw, 2.8rem)', fontWeight: 900, color: 'white', marginBottom: '0.9rem' }}>
+              ¿Listo para encontrar tu<br /><span style={{ color: 'var(--coral)', fontStyle: 'italic' }}>profesional ideal?</span>
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', marginBottom: '2.5rem', maxWidth: 460, margin: '0 auto 2.5rem' }}>
-              Registro gratuito. Sin comisiones ocultas. Encuentra un profesional verificado en tu zona hoy mismo.
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.92rem', marginBottom: '2rem', maxWidth: 420, margin: '0 auto 2rem' }}>
+              Registro gratuito. Sin comisiones ocultas.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/auth/signup?role=cliente" className="btn-primary" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }}>
-                Buscar un profesional
-              </Link>
-              <Link href="/auth/signup?role=profesional" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', color: 'white', fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 600, fontSize: '0.95rem', padding: '0.85rem 2rem', borderRadius: 6, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.15)', transition: 'all .2s' }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'}>
-                Registrarme como profesional
+            <div className="cta-btns" style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link href="/auth/signup?role=cliente" className="btn-primary" style={{ padding: '0.82rem 1.75rem', fontSize: '0.92rem' }}>Buscar un profesional</Link>
+              <Link href="/auth/signup?role=profesional" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', color: 'white', fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 600, fontSize: '0.92rem', padding: '0.82rem 1.75rem', borderRadius: 6, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.15)', transition: 'all .2s' }}>
+                Soy profesional
               </Link>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.78rem', marginTop: '1.5rem' }}>
-              ✓ Registro gratuito &nbsp;·&nbsp; ✓ Sin permanencia &nbsp;·&nbsp; ✓ Cancelación en cualquier momento
-            </p>
+            <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.76rem', marginTop: '1.25rem' }}>✓ Gratis · ✓ Sin permanencia · ✓ Cancela cuando quieras</p>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────────────── */}
-      <footer style={{ background: '#080F18', padding: '3.5rem 2rem 2rem' }}>
+      {/* FOOTER */}
+      <footer style={{ background: '#080F18', padding: '3rem 1.25rem 2rem' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '2.5rem', marginBottom: '3rem' }}>
+          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '2rem', marginBottom: '2.5rem' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: '1rem' }}>
-                <div style={{ width: 30, height: 30, background: 'var(--coral)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🔧</div>
-                <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '1rem', color: 'white' }}>Reparo<span style={{ color: 'var(--coral)' }}>Fácil</span></span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '0.85rem' }}>
+                <div style={{ width: 28, height: 28, background: 'var(--coral)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔧</div>
+                <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>Reparo<span style={{ color: 'var(--coral)' }}>Fácil</span></span>
               </div>
-              <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', lineHeight: 1.7, maxWidth: 200 }}>
-                La plataforma más confiable para servicios del hogar en España.
-              </p>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.28)', lineHeight: 1.65 }}>La plataforma más confiable para servicios del hogar en España.</p>
             </div>
             {[
-              { title: 'Plataforma', links: ['Cómo funciona', 'Para clientes', 'Para profesionales', 'Precios'] },
-              { title: 'Empresa', links: ['Sobre nosotros', 'Blog', 'Prensa', 'Carreras'] },
-              { title: 'Legal', links: ['Términos de uso', 'Privacidad', 'Cookies', 'Contacto'] },
+              { title: 'Plataforma', links: ['Cómo funciona', 'Para clientes', 'Para profesionales'] },
+              { title: 'Empresa', links: ['Sobre nosotros', 'Blog', 'Contacto'] },
+              { title: 'Legal', links: ['Términos', 'Privacidad', 'Cookies'] },
             ].map(col => (
               <div key={col.title}>
-                <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 700, color: 'white', marginBottom: '1rem', fontSize: '0.82rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{col.title}</div>
+                <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 700, color: 'white', marginBottom: '0.85rem', fontSize: '0.78rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{col.title}</div>
                 {col.links.map(l => (
-                  <div key={l} style={{ marginBottom: '0.6rem' }}>
-                    <a href="#" style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color .2s' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>
+                  <div key={l} style={{ marginBottom: '0.5rem' }}>
+                    <a href="#" style={{ fontSize: '0.81rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'none', transition: 'color .2s' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}>
                       {l}
                     </a>
                   </div>
@@ -376,13 +366,12 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.2)' }}>© 2025 ReparoFácil · Todos los derechos reservados.</span>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.2)' }}>Hecho con ❤️ en España</span>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.18)' }}>© 2025 ReparoFácil</span>
+            <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.18)' }}>Hecho con ❤️ en España</span>
           </div>
         </div>
       </footer>
-
     </div>
   )
 }
